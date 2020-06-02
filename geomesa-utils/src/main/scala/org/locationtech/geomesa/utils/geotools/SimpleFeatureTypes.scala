@@ -34,6 +34,7 @@ object SimpleFeatureTypes {
 
     // note: configs that don't start with 'geomesa' won't be persisted
 
+    val GeometryIndexRes      = "geomesa.geom.index.resolution"
     val DefaultDtgField       = "geomesa.index.dtg"
     val EnabledIndices        = "geomesa.indices.enabled"
     val FeatureExpiration     = "geomesa.feature.expiry"

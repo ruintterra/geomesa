@@ -8,7 +8,7 @@
     <inceptionYear>2013</inceptionYear>
 
     <groupId>org.locationtech.geomesa</groupId>
-    <artifactId>geomesa_2.11</artifactId>
+    <artifactId>geomesa_2.12</artifactId>
     <packaging>pom</packaging>
     <version>3.0.0-m2</version>
 
@@ -21,34 +21,34 @@
     </licenses>
 
     <modules>
-        <module>geomesa-accumulo</module>
+<!--        <module>geomesa-accumulo</module>-->
         <module>geomesa-archetypes</module>
         <module>geomesa-arrow</module>
-        <module>geomesa-bigtable</module>
-        <module>geomesa-blobstore</module>
-        <module>geomesa-cassandra</module>
+<!--        <module>geomesa-bigtable</module>-->
+<!--        <module>geomesa-blobstore</module>-->
+<!--        <module>geomesa-cassandra</module>-->
         <module>geomesa-convert</module>
         <module>geomesa-features</module>
         <module>geomesa-filter</module>
         <module>geomesa-fs</module>
-        <module>geomesa-geojson</module>
+<!--        <module>geomesa-geojson</module>-->
         <module>geomesa-gt</module>
-        <module>geomesa-hbase</module>
+<!--        <module>geomesa-hbase</module>-->
         <module>geomesa-index-api</module>
         <module>geomesa-jobs</module>
         <module>geomesa-jupyter</module>
-        <module>geomesa-kafka</module>
-        <module>geomesa-kudu</module>
-        <module>geomesa-lambda</module>
+<!--        <module>geomesa-kafka</module>-->
+<!--        <module>geomesa-kudu</module>-->
+<!--        <module>geomesa-lambda</module>-->
         <module>geomesa-memory</module>
         <module>geomesa-process</module>
-        <module>geomesa-redis</module>
+<!--        <module>geomesa-redis</module>-->
         <module>geomesa-security</module>
         <module>geomesa-spark</module>
-        <module>geomesa-stream</module>
+<!--        <module>geomesa-stream</module>-->
         <module>geomesa-tools</module>
         <module>geomesa-utils</module>
-        <module>geomesa-web</module>
+<!--        <module>geomesa-web</module>-->
         <module>geomesa-z3</module>
         <module>geomesa-zk-utils</module>
         <module>docs</module>
@@ -59,25 +59,25 @@
 
         <!-- *** main dependency versions *** -->
 
-        <scala.binary.version>2.11</scala.binary.version> <!-- must remain outside of version specific scala profiles for sbt/ivy -->
-        <scala.version>2.11.7</scala.version>
+        <scala.binary.version>2.12</scala.binary.version> <!-- must remain outside of version specific scala profiles for sbt/ivy -->
+        <scala.version>2.12.11</scala.version>
 
-        <scala.xml.version>1.0.6</scala.xml.version>
-        <scala.parsers.version>1.0.6</scala.parsers.version>
+        <scala.xml.version>1.2.0</scala.xml.version>
+        <scala.parsers.version>1.1.2</scala.parsers.version>
 
-        <gt.version>23.0</gt.version>
+        <gt.version>23.1</gt.version>
         <geoserver.version>2.17.0</geoserver.version>
-        <jts.version>1.16.0</jts.version>
-        <avro.version>1.7.5</avro.version> <!-- see also confluent.avro.version -->
-        <parquet.version>1.9.0</parquet.version>
-        <orc.version>1.5.4</orc.version>
-        <fasterxml.jackson.version>2.9.10</fasterxml.jackson.version> <!-- used by geoserver (2.9.7), spark (2.6.7) and arrow (2.7.1) -->
-        <fasterxml.jackson.databind.version>2.9.10.4</fasterxml.jackson.databind.version> <!-- used by spark (2.6.7.1) and arrow (2.7.1) -->
+        <jts.version>1.16.1</jts.version>
+        <avro.version>1.8.2</avro.version> <!-- see also confluent.avro.version -->
+        <parquet.version>1.10.1</parquet.version>
+        <orc.version>1.5.6</orc.version>
+        <fasterxml.jackson.version>2.10.4</fasterxml.jackson.version> <!-- used by geoserver (2.9.7), spark (2.6.7) and arrow (2.7.1) -->
+        <fasterxml.jackson.databind.version>2.10.4</fasterxml.jackson.databind.version> <!-- used by spark (2.6.7.1) and arrow (2.7.1) -->
         <codehaus.jackson.version>1.9.3</codehaus.jackson.version>
         <gdal.version>2.0.0</gdal.version>
-        <json4s.version>3.5.4</json4s.version>
+        <json4s.version>3.6.6</json4s.version>
         <scalatra.version>2.6.3</scalatra.version>
-        <kryo.version>3.0.3</kryo.version>
+        <kryo.version>4.0.2</kryo.version>
         <arrow.version>0.16.0</arrow.version>
         <netty.version>4.1.48.Final</netty.version>
         <metrics.version>3.2.6</metrics.version>
@@ -89,11 +89,11 @@
         <!-- *** provided artifacts, not bundled to support multiple environments *** -->
 
         <accumulo.version>2.0.0</accumulo.version>
-        <zookeeper.version>3.4.14</zookeeper.version>
+        <zookeeper.version>3.6.0</zookeeper.version>
         <thrift.version>0.12.0</thrift.version>
         <hadoop.version>2.8.5</hadoop.version>
         <guava.version>27.0-jre</guava.version>
-        <spark.version>2.3.1</spark.version>
+        <spark.version>3.0.0-preview2</spark.version>
         <hbase.version>2.2.3</hbase.version>
         <hbase-1.version>1.4.12</hbase-1.version>
         <hbase.guava.version>11.0.2</hbase.guava.version>
@@ -136,7 +136,7 @@
         <cassandra.server.version.recommended>3.11.4</cassandra.server.version.recommended>
         <cassandra.driver.version.recommended>3.7.2</cassandra.driver.version.recommended>
         <hadoop.version.recommended>2.8.5</hadoop.version.recommended>
-        <zookeeper.version.recommended>3.4.14</zookeeper.version.recommended>
+        <zookeeper.version.recommended>3.6.0</zookeeper.version.recommended>
     </properties>
 
     <profiles>
@@ -171,56 +171,57 @@
             <properties>
                 <skip.installers.deploy>true</skip.installers.deploy>
             </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>net.alchim31.maven</groupId>
-                        <artifactId>scala-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadoc</id>
-                                <goals>
-                                    <goal>doc-jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
+<!--            <build>-->
+<!--                <plugins>-->
+<!--                    <plugin>-->
+<!--                        <groupId>net.alchim31.maven</groupId>-->
+<!--                        <artifactId>scala-maven-plugin</artifactId>-->
+<!--                        <executions>-->
+<!--                            <execution>-->
+<!--                                <id>attach-javadoc</id>-->
+<!--                                <goals>-->
+<!--                                    <goal>doc-jar</goal>-->
+<!--                                </goals>-->
+<!--                            </execution>-->
+<!--                        </executions>-->
+<!--                    </plugin>-->
+<!--                    <plugin>-->
+<!--                        <groupId>org.apache.maven.plugins</groupId>-->
+<!--                        <artifactId>maven-javadoc-plugin</artifactId>-->
+<!--                        <executions>-->
+<!--                            <execution>-->
+<!--                                <id>attach-javadocs</id>-->
+<!--                                <goals>-->
+<!--                                    <goal>jar</goal>-->
+<!--                                </goals>-->
+<!--                            </execution>-->
+<!--                        </executions>-->
+<!--                    </plugin>-->
+<!--                    <plugin>-->
+<!--                        <groupId>org.apache.maven.plugins</groupId>-->
+<!--                        <artifactId>maven-gpg-plugin</artifactId>-->
+<!--                        <executions>-->
+<!--                            <execution>-->
+<!--                                <id>sign-artifacts</id>-->
+<!--                                <phase>verify</phase>-->
+<!--                                <goals>-->
+<!--                                    <goal>sign</goal>-->
+<!--                                </goals>-->
+<!--                            </execution>-->
+<!--                        </executions>-->
+<!--                    </plugin>-->
+<!--                </plugins>-->
+<!--            </build>-->
             <distributionManagement>
-                <repository>
-                    <id>ossrh</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
                 <snapshotRepository>
-                    <id>ossrh</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                    <id>intterra-snapshots</id>
+                    <url>https://nexus.intterra.ru/repository/maven-snapshots/</url>
                 </snapshotRepository>
+
+                <repository>
+                    <id>intterra-releases</id>
+                    <url>https://nexus.intterra.ru/repository/maven-releases/</url>
+                </repository>
             </distributionManagement>
         </profile>
 
@@ -1625,7 +1626,7 @@
             <dependency>
                 <groupId>org.parboiled</groupId>
                 <artifactId>parboiled-scala_${scala.binary.version}</artifactId>
-                <version>1.1.7</version>
+                <version>1.1.8</version>
             </dependency>
             <dependency>
                 <groupId>org.parboiled</groupId>
@@ -1702,22 +1703,22 @@
             <dependency>
                 <groupId>com.thoughtworks.paranamer</groupId>
                 <artifactId>paranamer</artifactId>
-                <version>2.6</version>
+                <version>2.8</version>
             </dependency>
             <dependency>
                 <groupId>com.twitter</groupId>
                 <artifactId>chill_${scala.binary.version}</artifactId>
-                <version>0.8.0</version>
+                <version>0.8.5</version>
             </dependency>
             <dependency>
                 <groupId>com.twitter</groupId>
                 <artifactId>chill-java</artifactId>
-                <version>0.8.0</version>
+                <version>0.8.5</version>
             </dependency>
             <dependency>
                 <groupId>com.clearspring.analytics</groupId>
                 <artifactId>stream</artifactId>
-                <version>2.9.2</version>
+                <version>2.9.6</version>
                 <exclusions>
                     <exclusion>
                         <groupId>it.unimi.dsi</groupId>
@@ -2208,7 +2209,7 @@
                 <!-- marked provided due to license issues -->
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>jsr305</artifactId>
-                <version>2.0.3</version>
+                <version>3.0.2</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -2422,7 +2423,7 @@
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
                     <!-- 3.4.4 was released 2018-11-01.  It requires Maven version >= 3.3.9. -->
-                    <version>3.4.4</version>
+                    <version>4.3.1</version>
                     <configuration>
                         <dependencies>
                             <dependency>
@@ -2566,40 +2567,40 @@
                         </excludeProperties>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>com.mycila</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
-                    <!-- 3.0 was released 2016-08-20 and is the latest as of 2018-11-30. -->
-                    <version>3.0</version>
-                    <configuration>
-                        <header>build/copyright/ccri.txt</header>
-                        <validHeaders>
-                            <validHeader>build/copyright/ccri-dstl.txt</validHeader>
-                            <validHeader>build/copyright/ccri-dstl-2016.txt</validHeader>
-                            <validHeader>build/copyright/dstl.txt</validHeader>
-                            <validHeader>build/copyright/ibm.txt</validHeader>
-                            <validHeader>build/copyright/ibm-ccri.txt</validHeader>
-                            <validHeader>build/copyright/mitre.txt</validHeader>
-                        </validHeaders>
-                        <properties>
-                            <year>${copyright.year}</year>
-                            <owner>Commonwealth Computer Research, Inc.</owner>
-                        </properties>
-                        <headerDefinitions>
-                            <definitions>build/copyright/geomesa-header.xml</definitions>
-                        </headerDefinitions>
-                        <mapping>
-                            <java>GEOMESA_JAVA</java>
-                            <scala>GEOMESA_JAVA</scala>
-                        </mapping>
-                        <includes>
-                            <include>src/main/java/**</include>
-                            <include>src/main/scala/**</include>
-                            <include>src/test/java/**</include>
-                            <include>src/test/scala/**</include>
-                        </includes>
-                    </configuration>
-                </plugin>
+<!--                <plugin>-->
+<!--                    <groupId>com.mycila</groupId>-->
+<!--                    <artifactId>license-maven-plugin</artifactId>-->
+<!--                    &lt;!&ndash; 3.0 was released 2016-08-20 and is the latest as of 2018-11-30. &ndash;&gt;-->
+<!--                    <version>3.0</version>-->
+<!--                    <configuration>-->
+<!--                        <header>build/copyright/ccri.txt</header>-->
+<!--                        <validHeaders>-->
+<!--                            <validHeader>build/copyright/ccri-dstl.txt</validHeader>-->
+<!--                            <validHeader>build/copyright/ccri-dstl-2016.txt</validHeader>-->
+<!--                            <validHeader>build/copyright/dstl.txt</validHeader>-->
+<!--                            <validHeader>build/copyright/ibm.txt</validHeader>-->
+<!--                            <validHeader>build/copyright/ibm-ccri.txt</validHeader>-->
+<!--                            <validHeader>build/copyright/mitre.txt</validHeader>-->
+<!--                        </validHeaders>-->
+<!--                        <properties>-->
+<!--                            <year>${copyright.year}</year>-->
+<!--                            <owner>Commonwealth Computer Research, Inc.</owner>-->
+<!--                        </properties>-->
+<!--                        <headerDefinitions>-->
+<!--                            <definitions>build/copyright/geomesa-header.xml</definitions>-->
+<!--                        </headerDefinitions>-->
+<!--                        <mapping>-->
+<!--                            <java>GEOMESA_JAVA</java>-->
+<!--                            <scala>GEOMESA_JAVA</scala>-->
+<!--                        </mapping>-->
+<!--                        <includes>-->
+<!--                            <include>src/main/java/**</include>-->
+<!--                            <include>src/main/scala/**</include>-->
+<!--                            <include>src/test/java/**</include>-->
+<!--                            <include>src/test/scala/**</include>-->
+<!--                        </includes>-->
+<!--                    </configuration>-->
+<!--                </plugin>-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
@@ -2677,19 +2678,19 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>com.mycila</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>license-check</id>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <phase>validate</phase>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>com.mycila</groupId>-->
+<!--                <artifactId>license-maven-plugin</artifactId>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>license-check</id>-->
+<!--                        <goals>-->
+<!--                            <goal>check</goal>-->
+<!--                        </goals>-->
+<!--                        <phase>validate</phase>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
             <plugin>
                 <!-- running `mvn process-resources -N` will generate a new GeoMesa README.md -->
                 <groupId>org.apache.maven.plugins</groupId>
@@ -2773,14 +2774,14 @@
                                 <requireProperty>
                                     <message>property scala.version must be set</message>
                                     <property>scala.version</property>
-                                    <regexMessage>property scala.version doesn't match expected compiler version (2.11.*)</regexMessage>
-                                    <regex>2.11.*</regex>
+                                    <regexMessage>property scala.version doesn't match expected compiler version (2.12.*)</regexMessage>
+                                    <regex>2.12.*</regex>
                                 </requireProperty>
                                 <requireProperty>
                                     <message>property scala.binary.version must be set</message>
                                     <property>scala.binary.version</property>
                                     <regexMessage>property scala.binary.version doesn't match compiler version</regexMessage>
-                                    <regex>2.11</regex>
+                                    <regex>2.12</regex>
                                 </requireProperty>
                             </rules>
                         </configuration>

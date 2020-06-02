@@ -10,11 +10,11 @@ package org.locationtech.geomesa.fs.storage.orc.utils
 
 import java.sql.Timestamp
 
-import org.locationtech.jts.geom.{Geometry, Point}
-import org.apache.orc.storage.ql.io.sarg.{PredicateLeaf, SearchArgument, SearchArgumentFactory}
 import org.apache.orc.TypeDescription
+import org.apache.orc.storage.ql.io.sarg.{PredicateLeaf, SearchArgument, SearchArgumentFactory}
 import org.locationtech.geomesa.filter.{Bounds, FilterHelper}
 import org.locationtech.geomesa.fs.storage.orc.OrcFileSystemStorage
+import org.locationtech.jts.geom.{Geometry, Point}
 import org.opengis.feature.simple.SimpleFeatureType
 import org.opengis.filter.Filter
 
@@ -38,6 +38,9 @@ object OrcSearchArguments {
       val preds = if (classOf[Geometry].isAssignableFrom(binding)) {
         if (classOf[Point] == binding) {
           FilterHelper.extractGeometries(filter, prop).values.map(addPoint(prop, _))
+        } else if (sft.getUserData.containsKey("geomesa.geom.index.resolution")) {
+          val resolution = sft.getUserData.get("geomesa.geom.index.resolution").asInstanceOf[String].toInt
+          FilterHelper.extractGeometries(filter, prop).values.map(addPolygon(prop, _, resolution))
         } else {
           // orc doesn't support push-down predicates against complex fields
           Seq.empty
@@ -153,4 +156,16 @@ object OrcSearchArguments {
       arg.end()
     }
   }
+
+  private def addPolygon(prop: String, geom: Geometry, resolution: Int): SearchArgument.Builder => Unit = {
+    val index = OrcFileSystemStorage.geometryIndexField(prop) + "._elem"
+    val indexer = GeometryIndexer(resolution)
+    val indices = indexer.indices(geom).map(_.asInstanceOf[Object]).toArray
+    arg => {
+      arg.startAnd()
+      arg.in(index, PredicateLeaf.Type.LONG, indices: _*)
+      arg.end()
+    }
+  }
+
 }

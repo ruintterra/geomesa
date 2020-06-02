@@ -16,7 +16,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.jts.JTSTypes
 import org.apache.spark.sql.sources._
-import org.apache.spark.sql.types.{DataTypes, StructField, StructType, TimestampType}
+import org.apache.spark.sql.types.{ArrayType, DataTypes, StructField, StructType, TimestampType}
 import org.geotools.factory.CommonFactoryFinder
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder
 import org.locationtech.geomesa.features.ScalaSimpleFeature
@@ -96,6 +96,8 @@ object SparkUtils extends LazyLogging {
         case DataTypes.FloatType               => classOf[java.lang.Float]
         case DataTypes.DoubleType              => classOf[java.lang.Double]
         case DataTypes.BooleanType             => classOf[java.lang.Boolean]
+        case DataTypes.ByteType                => classOf[java.lang.Integer]
+        case DataTypes.BinaryType              => classOf[Array[Byte]]
         case JTSTypes.PointTypeInstance        => classOf[org.locationtech.jts.geom.Point]
         case JTSTypes.LineStringTypeInstance   => classOf[org.locationtech.jts.geom.LineString]
         case JTSTypes.PolygonTypeInstance      => classOf[org.locationtech.jts.geom.Polygon]
@@ -124,7 +126,7 @@ object SparkUtils extends LazyLogging {
       case ObjectType.BOOLEAN  => DataTypes.BooleanType
       case ObjectType.DATE     => DataTypes.TimestampType
       case ObjectType.UUID     => null // not supported
-      case ObjectType.BYTES    => null // not supported
+      case ObjectType.BYTES    => DataTypes.BinaryType
       case ObjectType.LIST     => null // not supported
       case ObjectType.MAP      => null // not supported
       case ObjectType.GEOMETRY =>
