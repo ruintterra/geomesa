@@ -116,7 +116,7 @@
         <skip.installers.deploy>false</skip.installers.deploy>
 
         <!-- testing properties -->
-        <maven.test.jvmargs>-Xms512m -Xmx4g -XX:-UseGCOverheadLimit</maven.test.jvmargs>
+        <maven.test.jvmargs>-Xms512m -Xmx4g -XX:-UseGCOverheadLimit -Duser.timezone=UTC -Duser.language=en -Duser.region=US</maven.test.jvmargs>
         <test.fork.count>4</test.fork.count>
         <test.fork.reuse>true</test.fork.reuse>
         <!-- arrow tests become extremely slow with assertions enabled-->
@@ -2472,9 +2472,9 @@
                         <systemPropertyVariables>
                             <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
                             <java.awt.headless>true</java.awt.headless>
-                            <user.timezone>UTC</user.timezone>
-                            <user.language>en</user.language>
-                            <user.region>US</user.region>
+<!--                            <user.timezone>UTC</user.timezone>-->
+<!--                            <user.language>en</user.language>-->
+<!--                            <user.region>US</user.region>-->
                             <geomesa.scan.ranges.target>500</geomesa.scan.ranges.target>
                             <geomesa.accumulo.test.tablet.servers>1</geomesa.accumulo.test.tablet.servers>
                             <geomesa.hbase.test.region.servers>1</geomesa.hbase.test.region.servers>

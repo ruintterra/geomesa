@@ -8,6 +8,7 @@
 
 package org.locationtech.geomesa.spark
 
+import java.util
 import java.util.{Collections, UUID}
 
 import com.typesafe.scalalogging.LazyLogging
@@ -128,6 +129,7 @@ class SparkSQLColumnsTest extends Specification with LazyLogging {
         "boolean" -> DataTypes.BooleanType,
         "dtg"     -> DataTypes.TimestampType,
         "time"    -> DataTypes.TimestampType,
+        "bytes"   -> DataTypes.BinaryType,
         "line"    -> JTSTypes.LineStringTypeInstance,
         "poly"    -> JTSTypes.PolygonTypeInstance,
         "points"  -> JTSTypes.MultiPointTypeInstance,
@@ -138,7 +140,7 @@ class SparkSQLColumnsTest extends Specification with LazyLogging {
       )
 
       val schema = df.schema
-      schema must haveLength(16) // note: bytes, list, map not supported
+      schema must haveLength(17) // note: bytes, list, map not supported
       schema.map(_.name) mustEqual expected.map(_._1)
       schema.map(_.dataType) mustEqual expected.map(_._2)
 
@@ -148,8 +150,18 @@ class SparkSQLColumnsTest extends Specification with LazyLogging {
       val row = result.head
 
       // note: have to compare backwards so that java.util.Date == java.sql.Timestamp
-      Seq(sf.getID) ++ expected.drop(1).map { case (n, _) => sf.getAttribute(n) } mustEqual
-          Seq.tabulate(16)(i => row.get(i))
+      Seq(sf.getID) ++ expected.drop(1).map { case (n, _) =>
+        val attr = sf.getAttribute(n)
+        attr match {
+          case array: Array[Byte] => util.Arrays.toString(array)
+          case _ => attr
+        }
+      } mustEqual Seq.tabulate(17) { i =>
+        row.get(i) match {
+          case array: Array[Byte] => util.Arrays.toString(array)
+          case x => x
+        }
+      }
     }
   }
 
