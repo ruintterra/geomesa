@@ -8,7 +8,7 @@
 
 package org.locationtech.geomesa.utils.geohash
 
-import java.util.Iterator
+import java.util
 
 import scala.collection.mutable.TreeSet
 
@@ -17,7 +17,7 @@ import scala.collection.mutable.TreeSet
  *   in "z-order" starting with the lower left GeoHash and finishing with the upper
  *   right GeoHash.
  */
-class BoundingBoxGeoHashIterator(twoGh: TwoGeoHashBoundingBox) extends Iterator[GeoHash] {
+class BoundingBoxGeoHashIterator(twoGh: TwoGeoHashBoundingBox) extends util.Iterator[GeoHash] {
   val (latSteps, lonSteps) = GeoHash.getLatitudeLongitudeSpanCount(twoGh.ll, twoGh.ur, twoGh.prec)
 
   val Array(endLatIndex, endLonIndex) = GeoHash.gridIndicesForLatLong(twoGh.ur)
@@ -64,5 +64,5 @@ class BoundingBoxGeoHashIterator(twoGh: TwoGeoHashBoundingBox) extends Iterator[
     else throw new NoSuchElementException("No more geohashes available in iterator")
   }
 
-  def remove = throw new UnsupportedOperationException("Remove operation not supported")
+  override def remove = throw new UnsupportedOperationException("Remove operation not supported")
 }

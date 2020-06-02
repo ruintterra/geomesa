@@ -49,7 +49,7 @@ and then include the desired ``geomesa-*`` dependencies:
 
     <dependency>
       <groupId>org.locationtech.geomesa</groupId>
-      <artifactId>geomesa-utils_2.11</artifactId>
+      <artifactId>geomesa-utils_2.12</artifactId>
       <version>2.0.0-m.1</version>
     </dependency>
 

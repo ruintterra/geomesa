@@ -114,7 +114,7 @@ and then include the desired `geomesa-*` dependencies:
 ```xml
 <dependency>
   <groupId>org.locationtech.geomesa</groupId>
-  <artifactId>geomesa-utils_2.11</artifactId>
+  <artifactId>geomesa-utils_2.12</artifactId>
   <version>2.4.0</version>
 </dependency>
   ...

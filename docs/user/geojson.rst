@@ -128,7 +128,7 @@ GeoMesa ``DataStore``. The module is available through maven:
 
         <dependency>
             <groupId>org.locationtech.geomesa</groupId>
-            <artifactId>geomesa-geojson-api_2.11</artifactId>
+            <artifactId>geomesa-geojson-api_2.12</artifactId>
             <version>1.3.0</version>
         </dependency>
 

@@ -16,7 +16,7 @@ artifact with the ``data`` classifier. For example, for Maven add the following 
 
     <dependency>
         <groupId>org.locationtech.geomesa</groupId>
-        <artifactId>geomesa-tools_2.11</artifactId>
+        <artifactId>geomesa-tools_2.12</artifactId>
         <version>${geomesa.version}</version>
         <classifier>data</classifier>
     </dependency>
