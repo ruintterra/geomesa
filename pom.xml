@@ -51,7 +51,7 @@
 <!--        <module>geomesa-web</module>-->
         <module>geomesa-z3</module>
         <module>geomesa-zk-utils</module>
-        <module>docs</module>
+<!--        <module>docs</module>-->
     </modules>
 
     <properties>

@@ -1,10 +1,10 @@
-/***********************************************************************
+/** *********************************************************************
  * Copyright (c) 2013-2020 Commonwealth Computer Research, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Apache License, Version 2.0
  * which accompanies this distribution and is available at
  * http://www.opensource.org/licenses/apache2.0.php.
- ***********************************************************************/
+ * **********************************************************************/
 
 package org.locationtech.geomesa.fs.storage.common.metadata
 
@@ -13,7 +13,8 @@ import java.nio.charset.StandardCharsets
 import java.util.UUID
 import java.util.concurrent._
 
-import com.typesafe.config._
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.typesafe.scalalogging.LazyLogging
 import org.apache.hadoop.fs.Options.CreateOpts
 import org.apache.hadoop.fs._
@@ -25,40 +26,40 @@ import org.locationtech.geomesa.utils.stats.MethodProfiling
 import org.locationtech.jts.geom.Envelope
 import org.opengis.feature.simple.SimpleFeatureType
 
-import scala.collection.parallel.ExecutionContextTaskSupport
+import scala.collection.parallel.ForkJoinTaskSupport
 import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
 
 /**
-  * StorageMetadata implementation. Saves changes as a series of timestamped changelogs to allow
-  * concurrent modifications. The current state is obtained by replaying all the logs.
-  *
-  * Note that state is not read off disk until 'reload' is called.
-  *
-  * When accessed through the standard factory methods, the state will periodically reload from disk
-  * in order to pick up external changes (every 10 minutes by default).
-  *
-  * Note that modifications made to the metadata may not be immediately available, if they occur
-  * simultaneously with a reload. For example, calling `getPartition` immediately after `addPartition` may
-  * not return anything. However, the change is always persisted to disk, and will be available after the next
-  * reload. In general this does not cause problems, as reads and writes happen in different JVMs (ingest
-  * vs query).
-  *
-  * @param fc file context
-  * @param directory metadata root path
-  * @param sft simple feature type
-  * @param encoding file encoding
-  * @param scheme partition scheme
-  * @param leafStorage leaf storage
-  */
+ * StorageMetadata implementation. Saves changes as a series of timestamped changelogs to allow
+ * concurrent modifications. The current state is obtained by replaying all the logs.
+ *
+ * Note that state is not read off disk until 'reload' is called.
+ *
+ * When accessed through the standard factory methods, the state will periodically reload from disk
+ * in order to pick up external changes (every 10 minutes by default).
+ *
+ * Note that modifications made to the metadata may not be immediately available, if they occur
+ * simultaneously with a reload. For example, calling `getPartition` immediately after `addPartition` may
+ * not return anything. However, the change is always persisted to disk, and will be available after the next
+ * reload. In general this does not cause problems, as reads and writes happen in different JVMs (ingest
+ * vs query).
+ *
+ * @param fc          file context
+ * @param directory   metadata root path
+ * @param sft         simple feature type
+ * @param encoding    file encoding
+ * @param scheme      partition scheme
+ * @param leafStorage leaf storage
+ */
 class FileBasedMetadata(
-    fc: FileContext,
-    directory: Path,
-    val sft: SimpleFeatureType,
-    val encoding: String,
-    val scheme: PartitionScheme,
-    val leafStorage: Boolean
-  ) extends StorageMetadata {
+                         fc: FileContext,
+                         directory: Path,
+                         val sft: SimpleFeatureType,
+                         val encoding: String,
+                         val scheme: PartitionScheme,
+                         val leafStorage: Boolean
+                       ) extends StorageMetadata {
 
   import scala.collection.JavaConverters._
 
@@ -104,14 +105,15 @@ class FileBasedMetadata(
 
   private def reload(partition: Option[String], threads: Int, write: Boolean): Unit = {
     require(threads > 0, "Threads must be a positive number")
-    val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(threads))
+    val threadPool = new ForkJoinPool(threads)
+    val ec = ExecutionContext.fromExecutorService(threadPool)
     try {
       // read the compaction baseline file
       val compacted = FileBasedMetadata.readCompactedConfig(fc, directory)
       // read any updates to the given partition(s)
       // use a parallel collection, so that we get some threading on reading and deleting individual update files
       val paths = FileBasedMetadata.listPartitionConfigs(ec, fc, directory, partition).par
-      paths.tasksupport = new ExecutionContextTaskSupport(ec)
+      paths.tasksupport = new ForkJoinTaskSupport(threadPool)
       val updates = paths.flatMap(FileBasedMetadata.readPartitionConfig(fc, _)).seq
 
       partition match {
@@ -164,11 +166,14 @@ object FileBasedMetadata extends MethodProfiling with LazyLogging {
   val MetadataType = "file"
   val DefaultOptions = NamedOptions(MetadataType)
 
-  private val CompactedPath    = "compacted.json"
+  private val CompactedPath = "compacted.json"
   private val UpdateFilePrefix = "update-"
-  private val JsonPathSuffix   = ".json"
+  private val JsonPathSuffix = ".json"
 
-  private val options = ConfigRenderOptions.concise().setFormatted(true)
+  private val compactedJsonReader = new ObjectMapper().registerModule(DefaultScalaModule).readerFor(classOf[CompactedConfig])
+  private val compactedJsonWriter = new ObjectMapper().registerModule(DefaultScalaModule).writerFor(classOf[CompactedConfig])
+  private val partitionJsonReader = new ObjectMapper().registerModule(DefaultScalaModule).readerFor(classOf[PartitionConfig])
+  private val partitionJsonWriter = new ObjectMapper().registerModule(DefaultScalaModule).writerFor(classOf[PartitionConfig])
 
   // function to add/merge an existing partition in an atomic call
   private val add = new java.util.function.BiFunction[PartitionMetadata, PartitionMetadata, PartitionMetadata]() {
@@ -180,26 +185,30 @@ object FileBasedMetadata extends MethodProfiling with LazyLogging {
   private val remove = new java.util.function.BiFunction[PartitionMetadata, PartitionMetadata, PartitionMetadata]() {
     override def apply(existing: PartitionMetadata, update: PartitionMetadata): PartitionMetadata = {
       val result = existing - update
-      if (result.files.isEmpty) { null } else { result }
+      if (result.files.isEmpty) {
+        null
+      } else {
+        result
+      }
     }
   }
 
   /**
-    * Write metadata for a single partition operation to disk
-    *
-    * @param fc file context
-    * @param directory metadata path
-    * @param config partition config
-    */
+   * Write metadata for a single partition operation to disk
+   *
+   * @param fc        file context
+   * @param directory metadata path
+   * @param config    partition config
+   */
   private def writePartitionConfig(fc: FileContext, directory: Path, config: PartitionConfig): Unit = {
     val name = s"$UpdateFilePrefix${sanitizePartitionName(config.name)}-${UUID.randomUUID()}$JsonPathSuffix"
     val data = profile("Serialized partition configuration") {
-      PartitionConfigConvert.to(config).render(options)
+      partitionJsonWriter.writeValueAsBytes(config)
     }
     profile("Persisted partition configuration") {
       val file = new Path(directory, name)
       WithClose(fc.create(file, java.util.EnumSet.of(CreateFlag.CREATE), CreateOpts.createParent)) { out =>
-        out.write(data.getBytes(StandardCharsets.UTF_8))
+        out.write(data)
         out.hflush()
         out.hsync()
       }
@@ -208,43 +217,41 @@ object FileBasedMetadata extends MethodProfiling with LazyLogging {
   }
 
   /**
-    * Read and parse a partition metadata file
-    *
-    * @param fc file context
-    * @param file file path
-    * @return
-    */
+   * Read and parse a partition metadata file
+   *
+   * @param fc   file context
+   * @param file file path
+   * @return
+   */
   private def readPartitionConfig(fc: FileContext, file: Path): Option[PartitionConfig] = {
     try {
       val config = profile("Loaded partition configuration") {
         WithClose(new InputStreamReader(fc.open(file), StandardCharsets.UTF_8)) { in =>
-          ConfigFactory.parseReader(in, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.JSON))
+          partitionJsonReader.readValue[PartitionConfig](in)
         }
       }
-      profile("Parsed partition configuration") {
-        Some(pureconfig.loadConfigOrThrow[PartitionConfig](config))
-      }
+      Some(config)
     } catch {
       case NonFatal(e) => logger.error(s"Error reading config at path $file:", e); None
     }
   }
 
   /**
-    * Write metadata for a single partition operation to disk
-    *
-    * @param fc file context
-    * @param directory metadata path
-    * @param config partition config
-    */
+   * Write metadata for a single partition operation to disk
+   *
+   * @param fc        file context
+   * @param directory metadata path
+   * @param config    partition config
+   */
   private def writeCompactedConfig(fc: FileContext, directory: Path, config: Seq[PartitionConfig]): Unit = {
     val data = profile("Serialized compacted partition configuration") {
-      CompactedConfigConvert.to(CompactedConfig(config)).render(options)
+      compactedJsonWriter.writeValueAsBytes(CompactedConfig(config))
     }
     profile("Persisted compacted partition configuration") {
       val file = new Path(directory, CompactedPath)
       val flags = java.util.EnumSet.of(CreateFlag.CREATE, CreateFlag.OVERWRITE)
       WithClose(fc.create(file, flags, CreateOpts.createParent)) { out =>
-        out.write(data.getBytes(StandardCharsets.UTF_8))
+        out.write(data)
         out.hflush()
         out.hsync()
       }
@@ -253,24 +260,24 @@ object FileBasedMetadata extends MethodProfiling with LazyLogging {
   }
 
   /**
-    * Read and parse a partition metadata file
-    *
-    * @param fc file context
-    * @param directory metadata path
-    * @return
-    */
+   * Read and parse a partition metadata file
+   *
+   * @param fc        file context
+   * @param directory metadata path
+   * @return
+   */
   private def readCompactedConfig(fc: FileContext, directory: Path): Seq[PartitionConfig] = {
     val file = new Path(directory, CompactedPath)
     try {
-      if (!PathCache.exists(fc, file, reload = true)) { Seq.empty } else {
+      if (!PathCache.exists(fc, file, reload = true)) {
+        Seq.empty
+      } else {
         val config = profile("Loaded compacted partition configuration") {
           WithClose(new InputStreamReader(fc.open(file), StandardCharsets.UTF_8)) { in =>
-            ConfigFactory.parseReader(in, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.JSON))
+            compactedJsonReader.readValue[CompactedConfig](in)
           }
         }
-        profile("Parsed compacted partition configuration") {
-          pureconfig.loadConfigOrThrow[CompactedConfig](config).partitions
-        }
+        config.partitions
       }
     } catch {
       case NonFatal(e) => logger.error(s"Error reading config at path $file:", e); Seq.empty
@@ -278,21 +285,23 @@ object FileBasedMetadata extends MethodProfiling with LazyLogging {
   }
 
   /**
-    * Read any partition update paths from disk
-    *
-    * @param es executor service used for multi-threading
-    * @param fc file context
-    * @param directory metadata path
-    * @param partition partition to read, or read all partitions
-    * @return
-    */
+   * Read any partition update paths from disk
+   *
+   * @param es        executor service used for multi-threading
+   * @param fc        file context
+   * @param directory metadata path
+   * @param partition partition to read, or read all partitions
+   * @return
+   */
   private def listPartitionConfigs(
-      es: ExecutorService,
-      fc: FileContext,
-      directory: Path,
-      partition: Option[String]): Seq[Path] = {
+                                    es: ExecutorService,
+                                    fc: FileContext,
+                                    directory: Path,
+                                    partition: Option[String]): Seq[Path] = {
     profile("Listed metadata files") {
-      if (!PathCache.exists(fc, directory, reload = true)) { Seq.empty } else {
+      if (!PathCache.exists(fc, directory, reload = true)) {
+        Seq.empty
+      } else {
         val prefix = partition.map(p => s"$UpdateFilePrefix${sanitizePartitionName(p)}").getOrElse(UpdateFilePrefix)
         val result = new ConcurrentLinkedQueue[Path]()
         // use a phaser to track worker thread completion
@@ -308,13 +317,13 @@ object FileBasedMetadata extends MethodProfiling with LazyLogging {
   private def sanitizePartitionName(name: String): String = name.replaceAll("[^a-zA-Z0-9]", "-")
 
   private class DirectoryWorker(
-      es: ExecutorService,
-      phaser: Phaser,
-      fc: FileContext,
-      dir: Path,
-      result: ConcurrentLinkedQueue[Path],
-      prefix: String
-  ) extends Runnable {
+                                 es: ExecutorService,
+                                 phaser: Phaser,
+                                 fc: FileContext,
+                                 dir: Path,
+                                 result: ConcurrentLinkedQueue[Path],
+                                 prefix: String
+                               ) extends Runnable {
 
     override def run(): Unit = {
       try {
@@ -337,4 +346,5 @@ object FileBasedMetadata extends MethodProfiling with LazyLogging {
       }
     }
   }
+
 }

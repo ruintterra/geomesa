@@ -10,6 +10,8 @@ package org.locationtech.geomesa.fs.storage.api
 
 import java.io.Closeable
 
+import com.fasterxml.jackson.core.`type`.TypeReference
+import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 import org.apache.hadoop.fs.Path
 import org.locationtech.geomesa.fs.storage.api.StorageMetadata.PartitionMetadata
 import org.locationtech.geomesa.fs.storage.api.StorageMetadata.StorageFileAction.StorageFileAction
@@ -144,7 +146,7 @@ object StorageMetadata {
     * @param timestamp timestamp for the file
     * @param action type of file (append, modify, delete)
     */
-  case class StorageFile(name: String, timestamp: Long, action: StorageFileAction = StorageFileAction.Append)
+  case class StorageFile(name: String, timestamp: Long, @JsonScalaEnumeration(classOf[StorageFileActionType]) action: StorageFileAction = StorageFileAction.Append)
 
   /**
     * Holds a storage file path
@@ -162,6 +164,7 @@ object StorageMetadata {
     val Append, Modify, Delete = Value
   }
 
+  class StorageFileActionType extends TypeReference[StorageFileAction.type]
   /**
     * Immutable representation of an envelope
     *

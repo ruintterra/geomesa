@@ -135,6 +135,27 @@ class FileBasedMetadataTest extends Specification with AllExpectations {
         }
       }
     }
+    "compact metadata and read it back properly" in {
+      withPath { context =>
+        val created = factory.create(context, Map.empty, meta)
+        created.addPartition(PartitionMetadata("1", Seq(f1), new Envelope(-10, 10, -5, 5), 10L))
+        created.addPartition(PartitionMetadata("1", Seq(f2,f3), new Envelope(-11, 11, -5, 5), 20L))
+        created.addPartition(PartitionMetadata("2", Seq(f5, f6), new Envelope(-1, 1, -5, 5), 20L))
+        created.compact(None)
+        val loaded = factory.load(context)
+        loaded.foreach(_.reload()) // ensure state is loaded
+        loaded must beSome
+        foreach(Seq(created, loaded.get)) { metadata =>
+          metadata.encoding mustEqual encoding
+          metadata.sft mustEqual sft
+          metadata.sft.getUserData.asScala.toSeq must containAllOf(sft.getUserData.asScala.toSeq)
+          metadata.scheme mustEqual scheme
+          metadata.getPartitions().map(_.name) must containTheSameElementsAs(Seq("1", "2"))
+          metadata.getPartition("1").map(_.files) must beSome(containTheSameElementsAs(Seq(f1, f2, f3)))
+          metadata.getPartition("2").map(_.files) must beSome(containTheSameElementsAs(Seq(f5, f6)))
+        }
+      }
+    }
   }
 
   def withPath[R](code: FileSystemContext => R): R = {

@@ -8,6 +8,8 @@
 
 package org.locationtech.geomesa.fs.storage.common
 
+import com.fasterxml.jackson.core.`type`.TypeReference
+import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 import com.typesafe.config.{ConfigValue, ConfigValueFactory}
 import org.locationtech.geomesa.fs.storage.api.StorageMetadata.StorageFileAction.StorageFileAction
 import org.locationtech.geomesa.fs.storage.api.StorageMetadata.{PartitionBounds, PartitionMetadata, StorageFile, StorageFileAction}
@@ -54,7 +56,7 @@ package object metadata {
 
   case class PartitionConfig(
       name: String,
-      action: PartitionAction,
+      @JsonScalaEnumeration(classOf[PartitionActionType]) action: PartitionAction,
       files: Set[StorageFile],
       count: Long,
       envelope: EnvelopeConfig,
@@ -105,6 +107,7 @@ package object metadata {
     val Add, Remove, Clear = Value
   }
 
+  class PartitionActionType extends TypeReference[PartitionAction.type]
   // pureconfig converters for our case classes
 
   class EnumerationConvert[T <: Enumeration](enum: T) extends ConfigConvert[T#Value] {
