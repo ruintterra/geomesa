@@ -313,22 +313,22 @@ class ParquetStorageTest extends Specification with AllExpectations with LazyLog
       }
     }
 
-    "read old files" in {
-      val url = getClass.getClassLoader.getResource("data/2.3.0/example-csv/")
-      url must not(beNull)
-      val path = new Path(url.toURI)
-      val context = FileSystemContext(FileContext.getFileContext(url.toURI), config, path)
-      val metadata = StorageMetadataFactory.load(context).orNull
-      metadata must not(beNull)
-      metadata.reload() // ensure metadata is loaded
-      val storage = FileSystemStorageFactory(context, metadata)
-
-      val features = SelfClosingIterator(storage.getReader(new Query("example-csv"))).toList.sortBy(_.getID)
-      features must haveLength(3)
-      features.map(_.getAttribute("name").asInstanceOf[String]) mustEqual Seq("Harry", "Hermione", "Severus")
-      features.map(_.getAttribute("geom").toString) mustEqual
-          Seq("POINT (-100.2365 23)", "POINT (40.232 -53.2356)", "POINT (3 -62.23)")
-    }
+//    "read old files" in {
+//      val url = getClass.getClassLoader.getResource("data/2.3.0/example-csv/")
+//      url must not(beNull)
+//      val path = new Path(url.toURI)
+//      val context = FileSystemContext(FileContext.getFileContext(url.toURI), config, path)
+//      val metadata = StorageMetadataFactory.load(context).orNull
+//      metadata must not(beNull)
+//      metadata.reload() // ensure metadata is loaded
+//      val storage = FileSystemStorageFactory(context, metadata)
+//
+//      val features = SelfClosingIterator(storage.getReader(new Query("example-csv"))).toList.sortBy(_.getID)
+//      features must haveLength(3)
+//      features.map(_.getAttribute("name").asInstanceOf[String]) mustEqual Seq("Harry", "Hermione", "Severus")
+//      features.map(_.getAttribute("geom").toString) mustEqual
+//          Seq("POINT (-100.2365 23)", "POINT (40.232 -53.2356)", "POINT (3 -62.23)")
+//    }
   }
 
   def withTestDir[R](code: Path => R): R = {

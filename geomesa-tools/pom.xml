@@ -99,6 +99,14 @@
             <groupId>javax.media</groupId>
             <artifactId>jai_core</artifactId>
         </dependency>-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-scala_${scala.binary.version}</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
 
         <!-- provided dependencies -->
         <dependency>
