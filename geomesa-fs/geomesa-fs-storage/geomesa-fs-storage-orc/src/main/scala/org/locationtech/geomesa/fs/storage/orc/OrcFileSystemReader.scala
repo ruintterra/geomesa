@@ -19,6 +19,7 @@ import org.locationtech.geomesa.fs.storage.orc.utils.{OrcAttributeReader, OrcSea
 import org.locationtech.geomesa.utils.collection.CloseableIterator
 import org.locationtech.geomesa.utils.geotools.ObjectType
 import org.locationtech.geomesa.utils.geotools.Transform.Transforms
+import org.locationtech.geomesa.utils.geotools.SimpleFeatureTypes.Configs
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
 import org.opengis.filter.Filter
 
@@ -167,6 +168,11 @@ object OrcFileSystemReader {
     }
 
     buffer += fid
+
+    if(sft.getUserData.containsKey(Configs.GeometryIndexRes)) {
+      buffer += true
+      buffer += true
+    }
 
     buffer.toArray
   }

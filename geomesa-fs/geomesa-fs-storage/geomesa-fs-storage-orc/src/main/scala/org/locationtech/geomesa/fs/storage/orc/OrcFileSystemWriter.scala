@@ -29,7 +29,7 @@ class OrcFileSystemWriter(
 
   private val schema = OrcFileSystemStorage.createTypeDescription(sft)
 
-  private val options = OrcFile.writerOptions(config).setSchema(schema)
+  private val options = OrcFile.writerOptions(config).setSchema(schema).useUTCTimestamp(true)
   private val writer = OrcFile.createWriter(file, options)
   private val batch = schema.createRowBatch()
 

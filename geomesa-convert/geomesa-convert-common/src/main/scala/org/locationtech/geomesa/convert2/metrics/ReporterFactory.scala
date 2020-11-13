@@ -14,7 +14,7 @@ import com.codahale.metrics.{MetricRegistry, ScheduledReporter}
 import com.typesafe.config.Config
 import org.locationtech.geomesa.utils.classpath.ServiceLoader
 import pureconfig.error.{CannotConvert, ConfigReaderFailures}
-import pureconfig.{ConfigCursor, ConfigObjectCursor, ConfigReader}
+import pureconfig.{ConfigCursor, ConfigObjectCursor, ConfigReader, ConfigSource}
 
 import scala.concurrent.duration.Duration
 import scala.util.control.NonFatal
@@ -40,7 +40,7 @@ object ReporterFactory {
     * @return
     */
   def apply(config: Config, registry: MetricRegistry): ScheduledReporter = {
-    val ReporterConfig(rates, durations, interval) = pureconfig.loadConfigOrThrow[ReporterConfig](config)
+    val ReporterConfig(rates, durations, interval) = ConfigSource.fromConfig(config).loadOrThrow[ReporterConfig]
     val reporter = factories.toStream.flatMap(_.apply(config, registry, rates, durations)).headOption.getOrElse {
       throw new IllegalArgumentException(s"Could not load reporter factory using provided config:\n" +
           config.root().render())
@@ -68,7 +68,7 @@ object ReporterFactory {
     private def timeUnit(cur: ConfigObjectCursor, key: String, fallback: String): Either[ConfigReaderFailures, TimeUnit] = {
       val primary = cur.atKey(key).right.flatMap(_.asString).right.flatMap { unit =>
         TimeUnit.values().find(_.toString.equalsIgnoreCase(unit)).toRight[ConfigReaderFailures](
-          ConfigReaderFailures(cur.failureFor(CannotConvert(cur.value.toString, "TimeUnit", "Does not match a TimeUnit")))
+          ConfigReaderFailures(cur.failureFor(CannotConvert(cur.objValue.toString, "TimeUnit", "Does not match a TimeUnit")))
         )
       }
       if (primary.isRight || fallback == null) { primary } else {
@@ -81,7 +81,7 @@ object ReporterFactory {
       if (cur.isUndefined) { Right(-1L) } else {
         cur.asString.right.flatMap { d =>
           try { Right(Duration(d).toMillis) } catch {
-            case NonFatal(e) => cur.failed(CannotConvert(cur.value.toString, "Duration", e.getMessage))
+            case NonFatal(e) => cur.failed(CannotConvert(cur.asConfigValue.toString, "Duration", e.getMessage))
           }
         }
       }

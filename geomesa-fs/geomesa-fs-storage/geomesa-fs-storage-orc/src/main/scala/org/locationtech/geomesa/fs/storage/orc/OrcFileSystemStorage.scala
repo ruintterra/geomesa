@@ -11,6 +11,7 @@ package org.locationtech.geomesa.fs.storage.orc
 
 import org.apache.hadoop.fs.Path
 import org.apache.orc.TypeDescription
+import org.apache.orc.TypeDescription.createList
 import org.locationtech.geomesa.filter.factory.FastFilterFactory
 import org.locationtech.geomesa.fs.storage.api.FileSystemStorage.FileSystemWriter
 import org.locationtech.geomesa.fs.storage.api._
@@ -19,6 +20,7 @@ import org.locationtech.geomesa.fs.storage.common.AbstractFileSystemStorage.File
 import org.locationtech.geomesa.fs.storage.common.observer.FileSystemObserver
 import org.locationtech.geomesa.utils.geotools.ObjectType
 import org.locationtech.geomesa.utils.geotools.ObjectType.ObjectType
+import org.locationtech.geomesa.utils.geotools.SimpleFeatureTypes.Configs
 import org.locationtech.jts.geom.Geometry
 import org.opengis.feature.`type`.AttributeDescriptor
 import org.opengis.feature.simple.SimpleFeatureType
@@ -53,6 +55,8 @@ object OrcFileSystemStorage {
   def geometryXField(attribute: String): String = s"${attribute}_x"
   def geometryYField(attribute: String): String = s"${attribute}_y"
 
+  def geometryIndexField(attribute: String): String = s"${attribute}_index"
+
   /**
     * Create the Orc type description corresponding to the SimpleFeatureType. SimpleFeatureType is
     * modeled as an Orc Struct, with nested fields for each attribute.
@@ -61,6 +65,7 @@ object OrcFileSystemStorage {
     * @return
     */
   def createTypeDescription(sft: SimpleFeatureType, fid: Boolean = true): TypeDescription = {
+    import TypeDescription.createLong
     val container = TypeDescription.createStruct()
     var i = 0
     while (i < sft.getAttributeCount) {
@@ -69,6 +74,10 @@ object OrcFileSystemStorage {
     }
     if (fid) {
       container.addField("id", TypeDescription.createString())
+    }
+    if (sft.getUserData.containsKey(Configs.GeometryIndexRes)) {
+      val defaultGeom = sft.getGeometryDescriptor.getLocalName
+      container.addField(OrcFileSystemStorage.geometryIndexField(defaultGeom), createList(createLong()))
     }
     container
   }
@@ -84,7 +93,8 @@ object OrcFileSystemStorage {
     */
   def fieldCount(sft: SimpleFeatureType, fid: Boolean = true): Int = {
     val attributes = sft.getAttributeDescriptors.asScala.foldLeft(0) { case (sum, d) => sum + fieldCount(d) }
-    if (fid) { attributes + 1 } else { attributes }
+    val result = if (fid) { attributes + 1 } else { attributes }
+    if(sft.getUserData.containsKey(Configs.GeometryIndexRes)) result + 1 else result
   }
 
   /**

@@ -12,7 +12,7 @@ import com.typesafe.config._
 import org.locationtech.geomesa.fs.storage.api.NamedOptions
 import org.locationtech.geomesa.fs.storage.common.metadata.MetadataSerialization.Persistence.PartitionSchemeConfig
 import org.opengis.feature.simple.SimpleFeatureType
-import pureconfig.ConfigConvert
+import pureconfig.{ConfigConvert, ConfigSource}
 import pureconfig.generic.semiauto.deriveConvert
 
 import scala.util.Try
@@ -43,13 +43,13 @@ package object common {
       */
     def deserialize(options: String): NamedOptions = {
       val config = ConfigFactory.parseString(options, ParseOptions)
-      try { pureconfig.loadConfigOrThrow[NamedOptions](config) } catch {
+      try { ConfigSource.fromConfig(config).loadOrThrow[NamedOptions] } catch {
         case NonFatal(e) => Try(deserializeOldScheme(config)).getOrElse(throw e)
       }
     }
 
     private def deserializeOldScheme(config: Config): NamedOptions = {
-      val parsed = pureconfig.loadConfigOrThrow[PartitionSchemeConfig](config)
+      val parsed = ConfigSource.fromConfig(config).loadOrThrow[PartitionSchemeConfig]
       NamedOptions(parsed.scheme, parsed.options)
     }
   }

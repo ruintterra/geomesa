@@ -55,9 +55,9 @@ abstract class AbstractConverterFactory[S <: AbstractConverter[_, C, F, O]: Clas
     if (!conf.hasPath("type") || !conf.getString("type").equalsIgnoreCase(typeToProcess)) { None } else {
       val (config, fields, opts) = try {
         val c = withDefaults(conf)
-        val config = pureconfig.loadConfigOrThrow[C](c)
-        val fields = pureconfig.loadConfigOrThrow[Seq[F]](c)
-        val opts = pureconfig.loadConfigOrThrow[O](c)
+        val config = ConfigSource.fromConfig(c).loadOrThrow[C]
+        val fields = ConfigSource.fromConfig(c).loadOrThrow[Seq[F]]
+        val opts = ConfigSource.fromConfig(c).loadOrThrow[O]
         (config, fields, opts)
       } catch {
         case NonFatal(e) => throw new IllegalArgumentException(s"Invalid configuration: ${e.getMessage}")
@@ -249,7 +249,7 @@ object AbstractConverterFactory extends LazyLogging {
 
       if (cur.isUndefined) { Right(Map.empty) } else {
         def merge(cur: ConfigObjectCursor): Either[ConfigReaderFailures, Map[String, Expression]] = {
-          val map = cur.value.toConfig.toStringMap() // handles quoting keys
+          val map = cur.objValue.toConfig.toStringMap() // handles quoting keys
           map.foldLeft[Either[ConfigReaderFailures, Map[String, Expression]]](Right(Map.empty)) {
             case (map, (k, v)) =>
               // convert back to a cursor for parsing the expression
@@ -371,7 +371,7 @@ object AbstractConverterFactory extends LazyLogging {
           value.asString.right.flatMap { string =>
             values.find(_.toString.equalsIgnoreCase(string)) match {
               case Some(v) => Right(v.asInstanceOf[T])
-              case None => value.failed(CannotConvert(value.value.toString, values.head.getClass.getSimpleName, s"Must be one of: ${values.mkString(", ")}"))
+              case None => value.failed(CannotConvert(value.valueOpt.toString, values.head.getClass.getSimpleName, s"Must be one of: ${values.mkString(", ")}"))
             }
           }
         }
@@ -428,7 +428,7 @@ object AbstractConverterFactory extends LazyLogging {
     protected def exprFrom(cur: ConfigCursor): Either[ConfigReaderFailures, Expression] = {
       def parse(expr: String): Either[ConfigReaderFailures, Expression] =
         try { Right(Expression(expr)) } catch {
-          case NonFatal(e) => cur.failed(CannotConvert(cur.value.toString, "Expression", e.getMessage))
+          case NonFatal(e) => cur.failed(CannotConvert(cur.valueOpt.toString, "Expression", e.getMessage))
         }
       for { raw  <- cur.asString.right; expr <- parse(raw).right } yield { expr }
     }
@@ -455,7 +455,7 @@ object AbstractConverterFactory extends LazyLogging {
         def merge(cur: ConfigObjectCursor): Either[ConfigReaderFailures, Map[String, Config]] = {
           cur.map.foldLeft[Either[ConfigReaderFailures, Map[String, Config]]](Right(Map.empty)) {
             case (map, (k, v)) =>
-              for { m <- map.right; c <- v.asObjectCursor.right } yield { m + (k -> c.value.toConfig) }
+              for { m <- map.right; c <- v.asObjectCursor.right } yield { m + (k -> c.objValue.toConfig) }
           }
         }
         for { obj <- cur.asObjectCursor.right; configs <- merge(obj).right } yield { configs }
@@ -471,7 +471,7 @@ object AbstractConverterFactory extends LazyLogging {
       if (cur.isUndefined) { Right(Seq.empty) } else {
         def merge(cur: ConfigListCursor): Either[ConfigReaderFailures, Seq[Config]] = {
           cur.list.foldLeft[Either[ConfigReaderFailures, Seq[Config]]](Right(Seq.empty)) {
-            case (seq, v) => for { s <- seq.right; c <- v.asObjectCursor.right } yield { s :+ c.value.toConfig }
+            case (seq, v) => for { s <- seq.right; c <- v.asObjectCursor.right } yield { s :+ c.objValue.toConfig }
           }
         }
         for { obj <- cur.asListCursor.right; configs <- merge(obj).right } yield { configs }

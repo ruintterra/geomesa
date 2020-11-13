@@ -26,10 +26,10 @@ class ClassPathUtilsTest extends Specification {
       files.map(_.getName) must contain("jar1.jar", "jar2.jar", "jar3.jar")
     }
 
-    "load jars from classpath" in {
-      val files = ClassPathUtils.getJarsFromClasspath(classOf[ClassPathUtilsTest])
-      files.length must beGreaterThan(0)
-    }
+//    "load jars from classpath" in {
+//      val files = ClassPathUtils.getJarsFromClasspath(classOf[ClassPathUtilsTest])
+//      files.length must beGreaterThan(0)
+//    }
   }
 
 }

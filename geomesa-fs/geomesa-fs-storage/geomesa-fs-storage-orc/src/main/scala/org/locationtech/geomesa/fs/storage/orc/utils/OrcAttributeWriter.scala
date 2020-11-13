@@ -15,6 +15,7 @@ import org.apache.orc.storage.ql.exec.vector._
 import org.locationtech.geomesa.fs.storage.orc.OrcFileSystemStorage
 import org.locationtech.geomesa.utils.geotools.ObjectType
 import org.locationtech.geomesa.utils.geotools.ObjectType.ObjectType
+import org.locationtech.geomesa.utils.geotools.SimpleFeatureTypes.Configs
 import org.locationtech.geomesa.utils.text.WKBUtils
 import org.locationtech.jts.geom._
 import org.opengis.feature.simple.{SimpleFeature, SimpleFeatureType}
@@ -40,8 +41,9 @@ object OrcAttributeWriter {
     require(batch.cols.length == OrcFileSystemStorage.fieldCount(sft, fid),
       s"ORC schema does not match SimpleFeatureType: ${batch.cols.map(_.getClass.getName).mkString("\n\t", "\n\t", "")}")
 
+    val indexGeom = sft.getUserData.containsKey(Configs.GeometryIndexRes)
     val builder = Seq.newBuilder[OrcAttributeWriter]
-    builder.sizeHint(sft.getAttributeCount + (if (fid) { 1 } else { 0 }))
+    builder.sizeHint(sft.getAttributeCount + (if (indexGeom) 1 else 0) + (if (fid) 1 else 0))
 
     var i = 0
     var col = 0
@@ -71,6 +73,12 @@ object OrcAttributeWriter {
     if (fid) {
       builder += new FidWriter(batch.cols(col).asInstanceOf[BytesColumnVector])
     }
+    if (indexGeom) {
+      col += 1
+      val res = sft.getUserData.get(Configs.GeometryIndexRes).asInstanceOf[String].toInt
+      val indexer = GeometryIndexer(res)
+      builder += new GeometryIndexWriter(indexer, batch.cols(col).asInstanceOf[ListColumnVector])
+    }
 
     new SequenceWriter(builder.result)
   }
@@ -92,6 +100,17 @@ object OrcAttributeWriter {
       case ObjectType.MULTIPOLYGON    => new MultiPolygonWriter(x, y, i)
       case ObjectType.GEOMETRY        => new GeometryWkbWriter(cols(col).asInstanceOf[BytesColumnVector], i)
       case _ => throw new IllegalArgumentException(s"Unexpected object type $binding")
+    }
+  }
+
+  class GeometryIndexWriter(val indexer: GeometryIndexer, val vector: ListColumnVector) extends ListWriter(vector, -1, ObjectType.LONG) {
+
+    import scala.collection.JavaConverters._
+
+    override def apply(sf: SimpleFeature, row: Int): Unit = {
+      val geom = sf.getDefaultGeometry.asInstanceOf[Geometry]
+      val indices = indexer.indices(geom).map(_.asInstanceOf[AnyRef])
+      write(indices.asJava, row)
     }
   }
 
@@ -461,14 +480,18 @@ object OrcAttributeWriter {
 
     override def apply(sf: SimpleFeature, row: Int): Unit = {
       val value = sf.getAttribute(attribute).asInstanceOf[java.util.List[AnyRef]]
-      if (value != null) {
-        val length = value.size
+      write(value, row)
+    }
+
+    protected def write(values: java.util.List[AnyRef], row: Int): Unit = {
+      if (values != null) {
+        val length = values.size
         vector.child.ensureSize(vector.childCount + length, true)
         vector.offsets(row) = vector.childCount
         vector.lengths(row) = length
         var i = 0
         while (i < length) {
-          writer.setValue(value.get(i), vector.childCount + i)
+          writer.setValue(values.get(i), vector.childCount + i)
           i += 1
         }
         vector.childCount += length
