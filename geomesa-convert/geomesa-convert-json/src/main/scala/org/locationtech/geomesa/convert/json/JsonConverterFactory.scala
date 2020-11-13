@@ -188,9 +188,9 @@ object JsonConverterFactory {
       }
       config.right.flatMap { case (jType, path, rootPath) =>
         if (path.isDefined && rootPath.isDefined) {
-          cur.failed(CannotConvert(cur.objValue.toString, "JsonField", "Json fields must define only one of 'path' or 'root-path'"))
+          cur.failed(CannotConvert(cur.value.toString, "JsonField", "Json fields must define only one of 'path' or 'root-path'"))
         } else if (jType.isDefined && path.isEmpty && rootPath.isEmpty) {
-          cur.failed(CannotConvert(cur.objValue.toString, "JsonField", "Json fields must define a 'path' or 'root-path'"))
+          cur.failed(CannotConvert(cur.value.toString, "JsonField", "Json fields must define a 'path' or 'root-path'"))
         } else if (jType.isEmpty) {
           Right(DerivedField(name, transform))
         } else {
@@ -208,7 +208,7 @@ object JsonConverterFactory {
             case "geometry"         => Right(new GeometryJsonField(name, jsonPath, pathIsRoot, transform))
             case "array" | "list"   => Right(new ArrayJsonField(name, jsonPath, pathIsRoot, transform))
             case "object" | "map"   => Right(new ObjectJsonField(name, jsonPath, pathIsRoot, transform))
-            case t => cur.failed(CannotConvert(cur.objValue.toString, "JsonField", s"Invalid json-type '$t'"))
+            case t => cur.failed(CannotConvert(cur.value.toString, "JsonField", s"Invalid json-type '$t'"))
           }
         }
       }

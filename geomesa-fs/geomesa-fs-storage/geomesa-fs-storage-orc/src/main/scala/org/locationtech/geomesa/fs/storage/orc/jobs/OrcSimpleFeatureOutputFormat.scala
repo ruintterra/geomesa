@@ -26,7 +26,7 @@ class OrcSimpleFeatureOutputFormat extends FileOutputFormat[Void, SimpleFeature]
   private val delegate = new OrcOutputFormat[OrcStruct]
 
   def getRecordWriter(context: TaskAttemptContext, file: Path): RecordWriter[Void, SimpleFeature] = {
-    val options = org.apache.orc.mapred.OrcOutputFormat.buildOptions(context.getConfiguration).useUTCTimestamp(true)
+    val options = org.apache.orc.mapred.OrcOutputFormat.buildOptions(context.getConfiguration)
     val writer = new OrcMapreduceRecordWriter[OrcStruct](OrcFile.createWriter(file, options))
     getRecordWriter(context, writer)
   }

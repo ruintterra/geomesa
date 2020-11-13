@@ -1,10 +1,10 @@
-/** *********************************************************************
+/***********************************************************************
  * Copyright (c) 2013-2020 Commonwealth Computer Research, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Apache License, Version 2.0
  * which accompanies this distribution and is available at
  * http://www.opensource.org/licenses/apache2.0.php.
- * ********************************************************************* */
+ ***********************************************************************/
 
 package org.locationtech.geomesa.index.iterators
 
@@ -29,10 +29,10 @@ trait BinAggregatingScan extends AggregatingScan[ResultCallback] {
 
   // create the result object for the current scan
   override protected def createResult(
-                                       sft: SimpleFeatureType,
-                                       transform: Option[SimpleFeatureType],
-                                       batchSize: Int,
-                                       options: Map[String, String]): ResultCallback = {
+      sft: SimpleFeatureType,
+      transform: Option[SimpleFeatureType],
+      batchSize: Int,
+      options: Map[String, String]): ResultCallback = {
     val geom = options.get(GeomOpt).map(_.toInt).filter(_ != -1)
     val dtg = options.get(DateOpt).map(_.toInt).filter(_ != -1)
     val track = options.get(TrackOpt).map(_.toInt).filter(_ != -1)
@@ -40,11 +40,7 @@ trait BinAggregatingScan extends AggregatingScan[ResultCallback] {
 
     val encoder = BinaryOutputEncoder(sft, EncodingOptions(geom, dtg, track, label))
 
-    val binSize = if (label.isEmpty) {
-      16
-    } else {
-      24
-    }
+    val binSize = if (label.isEmpty) { 16 } else { 24 }
     val sort = options(SortOpt).toBoolean
 
     val buffer = ByteBuffer.wrap(Array.ofDim(batchSize * binSize)).order(ByteOrder.LITTLE_ENDIAN)
@@ -64,12 +60,12 @@ object BinAggregatingScan {
 
   // configuration keys
   object Configuration {
-    val SortOpt = "sort"
-    val TrackOpt = "track"
-    val GeomOpt = "geom"
-    val DateOpt = "dtg"
-    val LabelOpt = "label"
-    val DateArrayOpt = "dtg-array"
+    val SortOpt       = "sort"
+    val TrackOpt      = "track"
+    val GeomOpt       = "geom"
+    val DateOpt       = "dtg"
+    val LabelOpt      = "label"
+    val DateArrayOpt  = "dtg-array"
 
     @deprecated("AggregatingScan.Configuration.BatchSizeOpt")
     val BatchSizeOpt = "batch"
@@ -100,22 +96,22 @@ object BinAggregatingScan {
 
     val base = AggregatingScan.configure(sft, index, filter, None, sampling, batchSize) // note: don't pass transforms
     base ++ AggregatingScan.optionalMap(
-      TrackOpt -> sft.indexOf(trackId).toString,
-      GeomOpt -> sft.indexOf(geom).toString,
-      DateOpt -> dtg.map(sft.indexOf).getOrElse(-1).toString,
+      TrackOpt     -> sft.indexOf(trackId).toString,
+      GeomOpt      -> sft.indexOf(geom).toString,
+      DateOpt      -> dtg.map(sft.indexOf).getOrElse(-1).toString,
       DateArrayOpt -> setDateArrayOpt,
-      LabelOpt -> label.map(sft.indexOf(_).toString),
-      SortOpt -> sort.toString
+      LabelOpt     -> label.map(sft.indexOf(_).toString),
+      SortOpt      -> sort.toString
     )
   }
 
   /**
-   * Get the attributes used by a BIN query
-   *
-   * @param hints query hints
-   * @param sft   simple feature type
-   * @return
-   */
+    * Get the attributes used by a BIN query
+    *
+    * @param hints query hints
+    * @param sft simple feature type
+    * @return
+    */
   def propertyNames(hints: Hints, sft: SimpleFeatureType): Seq[String] = {
     val geom = hints.getBinGeomField.orElse(Option(sft.getGeomField))
     val dtg = hints.getBinDtgField.orElse(sft.getDtgField)
@@ -123,12 +119,12 @@ object BinAggregatingScan {
   }
 
   class ResultCallback(
-                        buffer: ByteBuffer,
-                        private var overflow: ByteBuffer,
-                        encoder: BinaryOutputEncoder,
-                        binSize: Int,
-                        sort: Boolean
-                      ) extends AggregatingScan.Result with BinaryOutputCallback {
+      buffer: ByteBuffer,
+      private var overflow: ByteBuffer,
+      encoder: BinaryOutputEncoder,
+      binSize: Int,
+      sort: Boolean
+    ) extends AggregatingScan.Result with BinaryOutputCallback {
 
     override def apply(trackId: Int, lat: Float, lon: Float, dtg: Long): Unit =
       put(ensureCapacity(16), trackId, lat, lon, dtg)
@@ -190,10 +186,10 @@ object BinAggregatingScan {
   }
 
   /**
-   * Converts bin results to features
-   *
-   * @tparam T result type
-   */
+    * Converts bin results to features
+    *
+    * @tparam T result type
+    */
   abstract class BinResultsToFeatures[T] extends ResultsToFeatures[T] {
 
     override def init(state: Map[String, String]): Unit = {}
@@ -216,5 +212,4 @@ object BinAggregatingScan {
 
     override def hashCode(): Int = schema.hashCode()
   }
-
 }

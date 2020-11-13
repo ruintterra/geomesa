@@ -111,8 +111,8 @@ package object metadata {
     override def to(a: T#Value): ConfigValue = ConfigValueFactory.fromAnyRef(a.toString)
     override def from(cur: ConfigCursor): Result[T#Value] = {
       cur.asString.right.flatMap { s =>
-          lazy val reason = CannotConvert(cur.asConfigValue.toString, enum.getClass.getName,
-            s"value ${cur.asConfigValue} is not a valid enum: ${enum.values.mkString(", ")}")
+          lazy val reason = CannotConvert(cur.value.toString, enum.getClass.getName,
+            s"value ${cur.value} is not a valid enum: ${enum.values.mkString(", ")}")
         enum.values.find(_.toString == s).asInstanceOf[Option[T#Value]].toRight(cur.failed(reason).left.get)
       }
     }

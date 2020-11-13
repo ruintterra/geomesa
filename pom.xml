@@ -71,11 +71,9 @@
         <jts.version>1.16.1</jts.version>
         <avro.version>1.8.2</avro.version> <!-- see also confluent.avro.version -->
         <parquet.version>1.10.1</parquet.version>
-        <orc.version>1.5.12</orc.version>
-        <fasterxml.jackson.version>2.11.3
-        </fasterxml.jackson.version> <!-- used by geoserver (2.9.7), spark (2.6.7) and arrow (2.7.1) -->
-        <fasterxml.jackson.databind.version>2.11.3
-        </fasterxml.jackson.databind.version> <!-- used by spark (2.6.7.1) and arrow (2.7.1) -->
+        <orc.version>1.5.6</orc.version>
+        <fasterxml.jackson.version>2.11.3</fasterxml.jackson.version> <!-- used by geoserver (2.9.7), spark (2.6.7) and arrow (2.7.1) -->
+        <fasterxml.jackson.databind.version>2.11.3</fasterxml.jackson.databind.version> <!-- used by spark (2.6.7.1) and arrow (2.7.1) -->
         <codehaus.jackson.version>1.9.13</codehaus.jackson.version>
         <json4s.version>3.6.10</json4s.version>
         <scalatra.version>2.7.0</scalatra.version>
@@ -136,7 +134,7 @@
         <hbase.thirdparty.version.recommended>2.2.1</hbase.thirdparty.version.recommended>
         <cassandra.server.version.recommended>3.11.8</cassandra.server.version.recommended>
         <cassandra.driver.version.recommended>3.10.2</cassandra.driver.version.recommended>
-        <hadoop.version.recommended>2.8.5</hadoop.version.recommended>
+        <hadoop.version.recommended>3.2.1</hadoop.version.recommended>
         <zookeeper.version.recommended>3.6.0</zookeeper.version.recommended>
     </properties>
 
@@ -1719,14 +1717,14 @@
             <dependency>
                 <groupId>com.github.pureconfig</groupId>
                 <artifactId>pureconfig_${scala.binary.version}</artifactId>
-                <version>0.14.0</version>
-                <!--                <exclusions>-->
-                <!--                    <exclusion>-->
-                <!--                        &lt;!&ndash; should only be needed for scala 2.10 compilation &ndash;&gt;-->
-                <!--                        <groupId>org.typelevel</groupId>-->
-                <!--                        <artifactId>macro-compat_${scala.binary.version}</artifactId>-->
-                <!--                    </exclusion>-->
-                <!--                </exclusions>-->
+                <version>0.11.1</version>
+                <exclusions>
+                    <exclusion>
+                        <!-- should only be needed for scala 2.10 compilation -->
+                        <groupId>org.typelevel</groupId>
+                        <artifactId>macro-compat_${scala.binary.version}</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.arrow</groupId>
